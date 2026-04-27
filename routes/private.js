@@ -35,6 +35,37 @@ privaterouter.get("/ExpenseDistribution", async (req, res) => {
 
     }
 })
+privaterouter.get("/getUserDetails", async (req, res) => {
+  try {
+    console.log("/getUserDetails");
+     let { id } = req?.user;
+        let UserExist = await User.findOne({ _id: id });
+       let total = await ExpenseModel.aggregate([
+  {
+    $match: { email: UserExist?.email }
+  },
+  {
+    $group: {
+      _id: null,
+      totalSpent: { $sum: "$amount" }
+    }
+  }
+]);
+
+    // 🔥 Demo user data
+    const user = {
+      username: UserExist?.username,
+      email: UserExist?.email,
+      totalSpent: total[0]?.totalSpent || 0,
+    };
+
+    return res.status(200).json(user);
+
+  } catch (err) {
+    console.log(err)
+    return res.status(500).json({ error: "Server side error" });
+  }
+});
 privaterouter.get("/GetAllExpenses", async (req, res) => {
     try {
         console.log("all expense route called", req?.user)
