@@ -6,7 +6,8 @@ import privaterouter from './routes/private.js';
 
 import authRoutes from './routes/auth.js';
 import authMiddleware from './middleware/authMiddleware.js';
-
+// import dotenv from "dotenv";
+// dotenv.config();
 dotenv.config();
 
 const app = express();
