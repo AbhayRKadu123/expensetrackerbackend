@@ -5,6 +5,36 @@ import jwt from 'jsonwebtoken';
 import ExpenseModel from '../models/ExpenseModel.js';
 
 const privaterouter = express.Router();
+privaterouter.get("/ExpenseDistribution", async (req, res) => {
+    try {
+        console.log("/ExpenseDistribution")
+        let { id } = req?.user;
+        let UserExist = await User.findOne({ _id: id });
+        if (!UserExist) {
+            return res.status(401).json({ error: "User does not exists" })
+        }
+        let result = await ExpenseModel.aggregate([{ $match: { email: UserExist?.email } },{
+            $group: {
+                _id: "$category",
+                total: { $sum: "$amount" }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                category: "$_id",
+                total: 1
+            }
+        }])
+        console.log(result);
+        res.status(200).json({data:result})
+
+
+    } catch (err) {
+        return res.status(500).json({ error: "Server side error" });
+
+    }
+})
 privaterouter.get("/GetAllExpenses", async (req, res) => {
     try {
         console.log("all expense route called", req?.user)
@@ -24,14 +54,31 @@ privaterouter.get("/GetAllExpenses", async (req, res) => {
 
     }
 })
-privaterouter.delete("/DeleteExpense/:id",async (req,res)=>{
-    try{
+privaterouter.put("/UpdateExpense/:id", async (req, res) => {
+    try {
+        let { id } = req.params;
+        let { amount,
+            category,
+            note } = req.body;
+        let result = await ExpenseModel.findByIdAndUpdate(id, {
+            amount,
+            category,
+            note
+        })
+
+        return res.status(200).json({ message: "expense updated successfully!" })
+    } catch (err) {
+        return res.status(500).json({ error: "Server side error" });
+    }
+})
+privaterouter.delete("/DeleteExpense/:id", async (req, res) => {
+    try {
         console.log(req.params)
-        let {id}=req.params;
+        let { id } = req.params;
         let deletedexpenses = await ExpenseModel.findByIdAndDelete(id);
 
-        return res.status(200).json({message:"Expense deleted successfully!"})
-    }catch(err){
+        return res.status(200).json({ message: "Expense deleted successfully!" })
+    } catch (err) {
         return res.status(500).json({ error: "Server side error" });
 
     }
