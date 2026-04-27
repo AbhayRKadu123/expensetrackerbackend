@@ -15,6 +15,9 @@ app.use(cors());
 app.use(express.json());
 
 // routes
+app.get("/test",(req,res)=>{
+  res.status(200).json({message:"test route"})
+})
 app.use('/api/auth', authRoutes);
 app.use('/private',authMiddleware,privaterouter);
 
